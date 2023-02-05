@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% load bootstrap4 %}
+
+{% block title %}Зміна особистої інформації{% endblock %}
+
+{% block content %}
+    <h2>Зміна особистих даних користувача {{ user.username }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% bootstrap_form form layout='horizontal' %}
+        {% buttons submit='Сохранить' %}{% endbuttons %}
+    </form>
+{% endblock %}

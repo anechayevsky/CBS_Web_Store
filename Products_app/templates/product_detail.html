@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% load bootstrap4 %}
+{% load static %}
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+     <div class="container-fluid mt-3">
+        <div class="row">
+            {% if product.image %}
+                <div class="col-md-auto">
+                    <img src="{{ product.image.url }}"
+                         class="main-image"
+                         style="max-width: 250pt; max-height: 300pt">
+                {% if images %}
+                    <div class="row-md-auto">
+                        {% for img in images %}
+                            <img style="max-width: 100pt;
+                                        max-height: 150pt;
+                                        margin: 15pt"
+                                 src="{{ img.image.url }}"
+                                 class="other-images">
+                        {% endfor %}
+                     </div>
+                </div>
+                {% endif %}
+            {% endif %}
+            <div class="col">
+                <h2>{{ product.title }}</h2>
+                {% if product.in_stock %}
+                    <p class="text-left font-weight-bold" style="color: #50C878">Є в наявності</p>
+                {% else %}
+                      <p class="text-left font-weight-bold" style="color: #50C878">Немає в наявності</p>
+                {% endif %}
+                <p>{{ product.description }}</p>
+                <p class="text-left" style="font-size: 17pt">{{ product.price }} {{ product.currency}}</p>
+                <form action="{% url 'cart:cart_add' product.pk %}" method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form cart_form %}
+                    {% bootstrap_button 'Добавити в кошик' name='add_to_cart'%}
+                </form>
+            </div>
+        </div>
+     </div>
+    <hr>
+    <h4 class="mt-5">Коментарі</h4>
+    {% if comments %}
+        {% bootstrap_pagination page url=search_keyword%}
+        <div class="mt-5"></div>
+            {% for comment in comments %}
+                <h5>{{ comment.author }}</h5>
+                <a href="{% url 'products:rating' slug=product.slug action='minus' comment_pk=comment.pk %}">-</a>
+                    {% if comment.rating == 0 %}
+                        <span style="color: gray; font-weight: bold">{{ comment.rating }}</span>
+                    {% elif comment.rating > 0 %}
+                        <span style="color: forestgreen; font-weight: bold">{{ comment.rating }}</span>
+                    {% elif comment.rating < 0 %}
+                        <span style="color: firebrick; font-weight: bold">{{ comment.rating }}</span>
+                    {% endif %}
+                <a href="{% url 'products:rating' slug=product.slug action='plus' comment_pk=comment.pk %}">+</a>
+                <p>{{ comment.text }}</p>
+                {% if comment.author == user.username %}
+                    <a href="{% url "products:comment_delete" slug=product.slug comment_pk=comment.pk %}">Удалить</a>
+                {% endif %}
+                <p class="text-right font-italic">{{ comment.published }}</p>
+            {% endfor %}
+        {% bootstrap_pagination page url=search_keyword %}
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {% bootstrap_form comment_form show_label=False size='small' %}
+        {% bootstrap_button 'Додати коментар' name='add_comment' %}
+    </form>
+
+    <hr>
+    <h3 style="margin-top: 8pt">Переглянуті товари</h3>
+    {% for product in viewed %}
+
+        <div class="table">
+            {% ifchanged %}
+                  <a href="{{ product.get_absolute_url }}">
+                                <img style="max-width: 55pt; max-height: 55pt"
+                                     src="
+                                    {% if product.image %}
+                                        {{ product.image.url }}
+                                    {% else %}
+                                        {% static "style/default.jpg" %}
+                                    {% endif %}">
+                      <a href="{% url 'products:product_detail' product.slug %}">{{ product.title }}</a>
+            {% endifchanged %}
+        </div>
+    {% endfor %}
+
+{% endblock %}
